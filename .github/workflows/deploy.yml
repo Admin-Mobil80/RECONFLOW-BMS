@@ -27,16 +27,29 @@ jobs:
       # NOTE: these are repo VARIABLES, not secrets - ${{ vars.* }} cannot see
       # anything stored under the Secrets tab.
       - name: Check deploy configuration
+        id: cfg
         env:
-          ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          BUCKET: ${{ vars.S3_BUCKET }}
-          PREFIX: ${{ vars.S3_PREFIX }}
-          DISTRIBUTION: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN || secrets.AWS_DEPLOY_ROLE_ARN }}
+          BUCKET: ${{ vars.S3_BUCKET || secrets.S3_BUCKET }}
+          PREFIX: ${{ vars.S3_PREFIX || secrets.S3_PREFIX }}
+          DISTRIBUTION: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID || secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
-          echo "AWS_DEPLOY_ROLE_ARN       = ${ROLE_ARN:-<EMPTY>}"
-          echo "S3_BUCKET                 = ${BUCKET:-<EMPTY>}"
-          echo "S3_PREFIX                 = ${PREFIX:-<EMPTY>}"
-          echo "CLOUDFRONT_DISTRIBUTION_ID= ${DISTRIBUTION:-<EMPTY>}"
+          # A value coming from a secret is masked as *** in these logs; "set"
+          # is therefore reported rather than the value itself.
+          for name in AWS_DEPLOY_ROLE_ARN S3_BUCKET S3_PREFIX CLOUDFRONT_DISTRIBUTION_ID; do
+            case "$name" in
+              AWS_DEPLOY_ROLE_ARN) value="$ROLE_ARN" ;;
+              S3_BUCKET) value="$BUCKET" ;;
+              S3_PREFIX) value="$PREFIX" ;;
+              CLOUDFRONT_DISTRIBUTION_ID) value="$DISTRIBUTION" ;;
+            esac
+            if [ -n "$value" ]; then printf '%-28s set\n' "$name"; else printf '%-28s <EMPTY>\n' "$name"; fi
+          done
+          if [ -n "$DISTRIBUTION" ]; then
+            echo "have_distribution=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "have_distribution=false" >> "$GITHUB_OUTPUT"
+          fi
           # Plain `if` blocks, not `[ -z "$X" ] && missing=...`: steps run under
           # `bash -e`, where an AND-OR list whose test is FALSE returns non-zero
           # and kills the step. That made this gate fail the moment all the
@@ -46,7 +59,7 @@ jobs:
           if [ -z "$BUCKET" ]; then missing="$missing S3_BUCKET"; fi
           if [ -z "$PREFIX" ]; then missing="$missing S3_PREFIX"; fi
           if [ -n "$missing" ]; then
-            echo "::error title=Deploy not configured::Missing repository variables:$missing - add them under Settings > Secrets and variables > Actions > the VARIABLES tab (repository scope, not Environment, not Secrets)."
+            echo "::error title=Deploy not configured::Missing:$missing - set each one under Settings > Secrets and variables > Actions, as either a repository Variable or a repository Secret (this workflow accepts both). Environment-scoped values are not visible here."
             exit 1
           fi
 
@@ -66,13 +79,13 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN || secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
 
       - name: Sync to S3
         env:
-          BUCKET: ${{ vars.S3_BUCKET }}
-          PREFIX: ${{ vars.S3_PREFIX }}
+          BUCKET: ${{ vars.S3_BUCKET || secrets.S3_BUCKET }}
+          PREFIX: ${{ vars.S3_PREFIX || secrets.S3_PREFIX }}
           BUILD_DIR: ${{ vars.BUILD_DIR || 'dist' }}
         run: |
           if [ ! -d "$BUILD_DIR" ]; then
@@ -94,9 +107,13 @@ jobs:
             --exclude "*" --include "*.html" --include "*.json" \
             --cache-control "public,max-age=0,must-revalidate"
 
+      # steps.cfg, not `vars.*`, because the secrets context is not usable
+      # in a step-level `if`.
       - name: Invalidate CloudFront
-        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
+        if: steps.cfg.outputs.have_distribution == 'true'
+        env:
+          DISTRIBUTION: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID || secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --distribution-id "$DISTRIBUTION" \
             --paths "/*"
