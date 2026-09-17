@@ -1,19 +1,32 @@
 # ReconFlow — BMS
 
-Business management system for ReconFlow.
+Internal business management system for ReconFlow: a Vite + React + TypeScript
+SPA. Not a public site.
 
 Part of the [WingTheIdea](https://github.com/Admin-Mobil80) group.
 
-## Status
+## Stack
 
-Scaffold only — no application code yet.
+- Vite 7, React 19, TypeScript, React Router (client-side routing)
+- Builds to `dist/`, hosted from a private S3 bucket behind CloudFront (OAC)
 
-## AWS
-
-Resources live in the shared account `231427841372`. Authenticate with:
+## Local development
 
 ```bash
-aws sso login --profile wingtheidea
+npm ci
+npm run dev        # http://localhost:5173
+npm test           # tsc --noEmit
+npm run build      # -> dist/
 ```
 
-Always pass `--profile wingtheidea`; resources are co-tenant with other products, so prefix anything created here with `reconflow-bms-`.
+## Access
+
+**There is no authentication yet.** The CloudFront distribution is publicly
+reachable, so do not put anything sensitive in this app until auth is in place.
+
+## Deploying
+
+Push to `main`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — infrastructure
+comes from the `reconflow-bms` CDK stack in
+[RECONFLOW-BACKEND](https://github.com/Admin-Mobil80/RECONFLOW-BACKEND), never
+from the console.

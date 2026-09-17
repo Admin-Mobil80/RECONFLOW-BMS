@@ -20,8 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Skips rather than fails while the AWS infra and app code do not exist,
-      # so main stays green. See docs/DEPLOYMENT.md for the variables to set.
+      # Skips rather than fails until the repo variables are set from the
+      # reconflow-* CDK stack outputs, so main stays green. See
+      # docs/DEPLOYMENT.md.
       - name: Check deploy configuration
         id: cfg
         env:
@@ -31,7 +32,6 @@ jobs:
           missing=""
           [ -z "$ROLE_ARN" ] && missing="$missing AWS_DEPLOY_ROLE_ARN"
           [ -z "$BUCKET" ]   && missing="$missing S3_BUCKET"
-          [ -f package.json ] || missing="$missing package.json"
           if [ -n "$missing" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "::notice title=Deploy skipped::Not configured yet - missing:$missing"
@@ -44,15 +44,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
 
       - name: Install dependencies
         if: steps.cfg.outputs.ready == 'true'
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm ci
 
       - name: Build
         if: steps.cfg.outputs.ready == 'true'
-        run: npm run build --if-present
+        run: npm run build
 
       - name: Configure AWS credentials (OIDC)
         if: steps.cfg.outputs.ready == 'true'
