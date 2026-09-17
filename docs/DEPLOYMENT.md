@@ -13,7 +13,7 @@ IAM role through GitHub's OIDC provider.
 Every WingTheIdea web app is served from one bucket, one folder per app:
 
 ```
-wingtheidea-webapps-231427841372/
+webapps.wingtheidea.com/
   RECONFLOW/
     PORTAL/   ->  https://reconflow.wingtheidea.com
     BMS/      ->  https://bms.reconflow.wingtheidea.com
@@ -24,10 +24,9 @@ including an `s3:prefix` condition on `ListBucket` — so `s3 sync --delete`
 cannot see or remove a sibling app's files. A wrong `S3_PREFIX` fails with
 AccessDenied rather than damaging another app.
 
-(The bucket is not named `webapps.wingtheidea.com`: a bucket name containing
-dots breaks TLS between CloudFront and the origin, because S3's wildcard
-certificate matches only one label. The hostname comes from CloudFront and
-Route 53 instead.)
+This is the house pattern across the account — `webapps.skilterco.com`,
+`webapps.bugtrakr.com` and a dozen more are laid out the same way, one
+distribution per subdomain pointing at a folder.
 
 ## Infrastructure
 
@@ -53,7 +52,7 @@ aws cloudformation describe-stacks --stack-name reconflow-bms \
 | Variable | Required | From stack output | Value |
 | --- | --- | --- | --- |
 | `AWS_DEPLOY_ROLE_ARN` | yes | `AwsDeployRoleArn` | Role trusted only for `repo:Admin-Mobil80/RECONFLOW-BMS:*` |
-| `S3_BUCKET` | yes | `S3Bucket` | `wingtheidea-webapps-231427841372` |
+| `S3_BUCKET` | yes | `S3Bucket` | `webapps.wingtheidea.com` |
 | `S3_PREFIX` | yes | `S3Prefix` | `RECONFLOW/BMS` |
 | `CLOUDFRONT_DISTRIBUTION_ID` | recommended | `CloudfrontDistributionId` | Without it the sync runs but the cache is not invalidated |
 | `AWS_REGION` | no | — | Defaults to `ap-south-1` |
