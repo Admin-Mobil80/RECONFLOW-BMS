@@ -28,10 +28,12 @@ jobs:
         env:
           ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           BUCKET: ${{ vars.S3_BUCKET }}
+          PREFIX: ${{ vars.S3_PREFIX }}
         run: |
           missing=""
           [ -z "$ROLE_ARN" ] && missing="$missing AWS_DEPLOY_ROLE_ARN"
           [ -z "$BUCKET" ]   && missing="$missing S3_BUCKET"
+          [ -z "$PREFIX" ]   && missing="$missing S3_PREFIX"
           if [ -n "$missing" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "::notice title=Deploy skipped::Not configured yet - missing:$missing"
@@ -66,18 +68,25 @@ jobs:
         if: steps.cfg.outputs.ready == 'true'
         env:
           BUCKET: ${{ vars.S3_BUCKET }}
+          PREFIX: ${{ vars.S3_PREFIX }}
           BUILD_DIR: ${{ vars.BUILD_DIR || 'dist' }}
         run: |
           if [ ! -d "$BUILD_DIR" ]; then
-            echo "::error title=No build output::Expected '$BUILD_DIR'. Set the BUILD_DIR variable to match your framework (Vite=dist, Next static export=out, CRA=build)."
+            echo "::error title=No build output::Expected '$BUILD_DIR'. Vite builds to dist; set the BUILD_DIR variable if that ever changes."
             exit 1
           fi
+          # The bucket is shared with every other WingTheIdea web app, so the
+          # destination is this app's folder and --delete never reaches a
+          # sibling. The deploy role is scoped to the same prefix, so a wrong
+          # S3_PREFIX fails with AccessDenied rather than touching another app.
+          dest="s3://$BUCKET/${PREFIX%/}"
+          echo "Deploying $BUILD_DIR to $dest"
           # Hashed assets cache hard; everything else must revalidate so a
           # deploy is visible immediately.
-          aws s3 sync "$BUILD_DIR" "s3://$BUCKET" --delete \
+          aws s3 sync "$BUILD_DIR" "$dest" --delete \
             --exclude "*.html" --exclude "*.json" \
             --cache-control "public,max-age=31536000,immutable"
-          aws s3 sync "$BUILD_DIR" "s3://$BUCKET" --delete \
+          aws s3 sync "$BUILD_DIR" "$dest" --delete \
             --exclude "*" --include "*.html" --include "*.json" \
             --cache-control "public,max-age=0,must-revalidate"
 
