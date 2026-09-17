@@ -1,0 +1,88 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Required for GitHub's OIDC token. Do not add long-lived AWS keys here.
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Skips rather than fails while the AWS infra and app code do not exist,
+      # so main stays green. See docs/DEPLOYMENT.md for the variables to set.
+      - name: Check deploy configuration
+        id: cfg
+        env:
+          ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          BUCKET: ${{ vars.S3_BUCKET }}
+        run: |
+          missing=""
+          [ -z "$ROLE_ARN" ] && missing="$missing AWS_DEPLOY_ROLE_ARN"
+          [ -z "$BUCKET" ]   && missing="$missing S3_BUCKET"
+          [ -f package.json ] || missing="$missing package.json"
+          if [ -n "$missing" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy skipped::Not configured yet - missing:$missing"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node
+        if: steps.cfg.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Build
+        if: steps.cfg.outputs.ready == 'true'
+        run: npm run build --if-present
+
+      - name: Configure AWS credentials (OIDC)
+        if: steps.cfg.outputs.ready == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+
+      - name: Sync to S3
+        if: steps.cfg.outputs.ready == 'true'
+        env:
+          BUCKET: ${{ vars.S3_BUCKET }}
+          BUILD_DIR: ${{ vars.BUILD_DIR || 'dist' }}
+        run: |
+          if [ ! -d "$BUILD_DIR" ]; then
+            echo "::error title=No build output::Expected '$BUILD_DIR'. Set the BUILD_DIR variable to match your framework (Vite=dist, Next static export=out, CRA=build)."
+            exit 1
+          fi
+          # Hashed assets cache hard; everything else must revalidate so a
+          # deploy is visible immediately.
+          aws s3 sync "$BUILD_DIR" "s3://$BUCKET" --delete \
+            --exclude "*.html" --exclude "*.json" \
+            --cache-control "public,max-age=31536000,immutable"
+          aws s3 sync "$BUILD_DIR" "s3://$BUCKET" --delete \
+            --exclude "*" --include "*.html" --include "*.json" \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      - name: Invalidate CloudFront
+        if: steps.cfg.outputs.ready == 'true' && vars.CLOUDFRONT_DISTRIBUTION_ID != ''
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

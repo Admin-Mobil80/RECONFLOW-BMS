@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # This repo is scaffold-only until a framework is chosen, so every step
+      # below is skipped when there is no package.json. Remove this guard once
+      # the app lands.
+      - name: Detect app code
+        id: app
+        run: |
+          if [ -f package.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Scaffold only::No package.json yet - skipping install, lint, test and build."
+          fi
+
+      - name: Set up Node
+        if: steps.app.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.app.outputs.present == 'true'
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Lint
+        if: steps.app.outputs.present == 'true'
+        run: npm run lint --if-present
+
+      - name: Test
+        if: steps.app.outputs.present == 'true'
+        run: npm test --if-present
+
+      - name: Build
+        if: steps.app.outputs.present == 'true'
+        run: npm run build --if-present
