@@ -20,52 +20,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Skips rather than fails until the repo variables are set from the
-      # reconflow-* CDK stack outputs, so main stays green. See
-      # docs/DEPLOYMENT.md.
+      # The infrastructure exists, so a missing variable is a real failure, not
+      # something to skip past: a skipped job still reports green, which looks
+      # exactly like a successful deploy. None of these values are secret, so
+      # they are printed to make a misconfiguration obvious at a glance.
+      # NOTE: these are repo VARIABLES, not secrets - ${{ vars.* }} cannot see
+      # anything stored under the Secrets tab.
       - name: Check deploy configuration
-        id: cfg
         env:
           ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           BUCKET: ${{ vars.S3_BUCKET }}
           PREFIX: ${{ vars.S3_PREFIX }}
+          DISTRIBUTION: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
+          echo "AWS_DEPLOY_ROLE_ARN       = ${ROLE_ARN:-<EMPTY>}"
+          echo "S3_BUCKET                 = ${BUCKET:-<EMPTY>}"
+          echo "S3_PREFIX                 = ${PREFIX:-<EMPTY>}"
+          echo "CLOUDFRONT_DISTRIBUTION_ID= ${DISTRIBUTION:-<EMPTY>}"
+          # Plain `if` blocks, not `[ -z "$X" ] && missing=...`: steps run under
+          # `bash -e`, where an AND-OR list whose test is FALSE returns non-zero
+          # and kills the step. That made this gate fail the moment all the
+          # variables were correctly set - the exact opposite of what it checks.
           missing=""
-          [ -z "$ROLE_ARN" ] && missing="$missing AWS_DEPLOY_ROLE_ARN"
-          [ -z "$BUCKET" ]   && missing="$missing S3_BUCKET"
-          [ -z "$PREFIX" ]   && missing="$missing S3_PREFIX"
+          if [ -z "$ROLE_ARN" ]; then missing="$missing AWS_DEPLOY_ROLE_ARN"; fi
+          if [ -z "$BUCKET" ]; then missing="$missing S3_BUCKET"; fi
+          if [ -z "$PREFIX" ]; then missing="$missing S3_PREFIX"; fi
           if [ -n "$missing" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=Deploy skipped::Not configured yet - missing:$missing"
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "::error title=Deploy not configured::Missing repository variables:$missing - add them under Settings > Secrets and variables > Actions > the VARIABLES tab (repository scope, not Environment, not Secrets)."
+            exit 1
           fi
 
       - name: Set up Node
-        if: steps.cfg.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
       - name: Install dependencies
-        if: steps.cfg.outputs.ready == 'true'
         run: |
           npm ci
 
       - name: Build
-        if: steps.cfg.outputs.ready == 'true'
         run: npm run build
 
       - name: Configure AWS credentials (OIDC)
-        if: steps.cfg.outputs.ready == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
 
       - name: Sync to S3
-        if: steps.cfg.outputs.ready == 'true'
         env:
           BUCKET: ${{ vars.S3_BUCKET }}
           PREFIX: ${{ vars.S3_PREFIX }}
@@ -91,7 +95,7 @@ jobs:
             --cache-control "public,max-age=0,must-revalidate"
 
       - name: Invalidate CloudFront
-        if: steps.cfg.outputs.ready == 'true' && vars.CLOUDFRONT_DISTRIBUTION_ID != ''
+        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
