@@ -1,9 +1,10 @@
 name: CI
 
+# Pull requests only. A push to main runs deploy.yml, which builds the same way
+# before shipping - running CI there too would mean two runs and two identical
+# builds for one push.
 on:
   pull_request:
-  push:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
