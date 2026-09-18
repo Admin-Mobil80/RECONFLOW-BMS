@@ -46,3 +46,4 @@ cdk.out/
 .idea/
 .vscode/
 *.swp
+dist-mock/

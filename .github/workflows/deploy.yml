@@ -73,7 +73,15 @@ jobs:
         run: |
           npm ci
 
+      # Cognito settings are baked into the bundle at build time. The app
+      # defaults to the production BMS pool and client, so these are only
+      # needed to point a build somewhere else; VITE_AUTH_MOCK=1 selects the mock.
       - name: Build
+        env:
+          VITE_AWS_REGION: ${{ vars.VITE_AWS_REGION || secrets.VITE_AWS_REGION }}
+          VITE_COGNITO_USER_POOL_ID: ${{ vars.VITE_COGNITO_USER_POOL_ID || secrets.VITE_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID || secrets.VITE_COGNITO_CLIENT_ID }}
+          VITE_AUTH_MOCK: ${{ vars.VITE_AUTH_MOCK }}
         run: npm run build
 
       - name: Configure AWS credentials (OIDC)

@@ -1,22 +1,46 @@
 :root {
   --bg: #ffffff;
-  --fg: #16181d;
-  --muted: #5c626e;
-  --border: #e4e6eb;
-  --accent: #2f6df6;
+  --bg-raised: #f7f8fa;
+  --bg-sunken: #f0f2f5;
+  --fg: #14161a;
+  --fg-muted: #5b6270;
+  --fg-faint: #858c99;
+  --border: #e2e5ea;
+  --border-strong: #c9ced7;
+  --accent: #2f5fe0;
+  --accent-fg: #ffffff;
+  --accent-soft: #eaf0ff;
+  --warn-soft: #fff6e5;
+  --warn-border: #e8c98a;
+  --warn-fg: #6b4e12;
+  --ok: #17794a;
+  --radius: 10px;
+  --maxw: 68rem;
 
   color-scheme: light dark;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.55;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101216;
-    --fg: #f2f3f5;
-    --muted: #a0a6b2;
-    --border: #282b33;
-    --accent: #7ba1ff;
+    --bg: #0e1014;
+    --bg-raised: #161920;
+    --bg-sunken: #1b1f27;
+    --fg: #f2f4f7;
+    --fg-muted: #a2a9b6;
+    --fg-faint: #7b8394;
+    --border: #262b34;
+    --border-strong: #3a414d;
+    --accent: #7ea2ff;
+    --accent-fg: #0e1014;
+    --accent-soft: #1a2237;
+    --warn-soft: #2a2314;
+    --warn-border: #5c4a22;
+    --warn-fg: #e8d5a8;
+    --ok: #4cc38a;
   }
 }
 
@@ -26,37 +50,671 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
 }
 
-main {
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: 4rem 1rem;
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 h1 {
-  font-size: clamp(1.9rem, 5vw, 2.6rem);
-  letter-spacing: -0.02em;
-  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 5vw, 3.1rem);
+}
+h2 {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+h3 {
+  font-size: 1.05rem;
 }
 
 p {
-  color: var(--muted);
-  margin: 0 0 1.5rem;
+  margin: 0;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 0.78rem;
-  color: var(--muted);
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.25rem;
 }
 
-a {
+/* --- header ------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 60px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  font-size: 1.05rem;
+}
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.bms-tag {
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  background: var(--accent-soft);
   color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.93rem;
+}
+.nav a:not(.btn) {
+  color: var(--fg-muted);
+}
+.nav a:not(.btn):hover {
+  color: var(--fg);
+}
+
+@media (max-width: 680px) {
+  .nav .nav-hide-sm {
+    display: none;
+  }
+}
+
+/* --- buttons ------------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover {
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--accent) 85%, black);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover {
+  background: var(--bg-raised);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-block {
+  width: 100%;
+}
+
+/* --- landing ------------------------------------------------------------ */
+
+.hero {
+  padding: clamp(3.5rem, 9vw, 6.5rem) 0 clamp(2.5rem, 6vw, 4rem);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+/* The hero break is a typographic nicety on wide screens; at phone width the
+   line already wraps, and forcing it again looks broken. */
+.hero br {
+  display: none;
+}
+@media (min-width: 720px) {
+  .hero br {
+    display: inline;
+  }
+}
+
+.hero p.lede {
+  margin-top: 1.25rem;
+  font-size: clamp(1.05rem, 2.2vw, 1.22rem);
+  color: var(--fg-muted);
+  max-width: 44rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.section {
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+  border-top: 1px solid var(--border);
+}
+
+.section-head {
+  max-width: 44rem;
+  margin-bottom: 2.25rem;
+}
+.section-head p {
+  margin-top: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+.grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem;
+}
+.card h3 {
+  margin-bottom: 0.5rem;
+}
+.card p {
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+}
+
+.step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 650;
+  margin-bottom: 0.9rem;
+}
+
+.pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.88rem;
+  color: var(--fg-muted);
+}
+
+.boundary {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.boundary ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.7rem;
+}
+.boundary li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  color: var(--fg-muted);
+  font-size: 0.97rem;
+}
+.boundary li b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.tick {
+  flex: none;
+  margin-top: 0.3rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 0 3rem;
+  color: var(--fg-faint);
+  font-size: 0.88rem;
+}
+.site-footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: space-between;
+}
+
+/* --- auth --------------------------------------------------------------- */
+
+.auth-main {
+  min-height: calc(100vh - 60px);
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 1.25rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 24rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.9rem;
+}
+.auth-card h1 {
+  font-size: 1.45rem;
+}
+.auth-card .sub {
+  color: var(--fg-muted);
+  font-size: 0.93rem;
+  margin-top: 0.4rem;
+}
+
+.field {
+  display: block;
+  margin-top: 1.15rem;
+}
+.field span {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 550;
+  margin-bottom: 0.35rem;
+}
+.field input {
+  width: 100%;
+  padding: 0.62rem 0.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+.field input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* --- one-time code ------------------------------------------------------ */
+
+.code-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+}
+.code-input input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3.4rem;
+  padding: 0;
+  text-align: center;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  caret-color: var(--accent);
+}
+.code-input input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.code-input input:disabled {
+  opacity: 0.6;
+}
+
+.form-error {
+  margin-top: 1rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, crimson 12%, var(--bg));
+  border: 1px solid color-mix(in srgb, crimson 35%, var(--bg));
+  font-size: 0.9rem;
+}
+ul.form-error {
+  padding-left: 1.6rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+/* --- contact form ------------------------------------------------------- */
+
+.contact-form {
+  max-width: 44rem;
+}
+
+.contact-grid {
+  display: grid;
+  gap: 0 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.field em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--fg-faint);
+}
+
+.field textarea {
+  width: 100%;
+  padding: 0.62rem 0.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  resize: vertical;
+}
+.field textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.field ::placeholder {
+  color: var(--fg-faint);
+}
+
+/* Honeypot: off-canvas rather than display:none, so naive bots still "see" it. */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.contact-note {
+  font-size: 0.86rem;
+  color: var(--fg-faint);
+}
+
+.contact-done {
+  max-width: 44rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+.contact-done p {
+  margin-top: 0.4rem;
+  color: var(--fg-muted);
+}
+
+.note {
+  margin-top: 1.4rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border);
+  color: var(--fg-faint);
+  font-size: 0.85rem;
+}
+
+/* --- app shell ---------------------------------------------------------- */
+
+.app-banner {
+  background: var(--warn-soft);
+  border-bottom: 1px solid var(--warn-border);
+  color: var(--warn-fg);
+  font-size: 0.86rem;
+  padding: 0.55rem 0;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  padding-top: 0.25rem;
+}
+.app-nav a {
+  padding: 0.6rem 0.9rem;
+  color: var(--fg-muted);
+  font-size: 0.93rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.app-nav a:hover {
+  color: var(--fg);
+  text-decoration: none;
+}
+.app-nav a.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+  font-weight: 550;
+}
+
+.page-head {
+  padding: 2rem 0 1.5rem;
+}
+.page-head p {
+  margin-top: 0.5rem;
+  color: var(--fg-muted);
+  max-width: 46rem;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+.linklike {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--accent);
+  cursor: pointer;
+}
+.linklike:hover {
+  text-decoration: underline;
+}
+
+/* --- interfaces table --------------------------------------------------- */
+
+.iface-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.count {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+.iface-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.iface-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.95rem 1.1rem;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+}
+.iface-row:last-child {
+  border-bottom: none;
+}
+
+.iface-name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-weight: 550;
+}
+
+.iface-meta {
+  margin-top: 0.2rem;
+  font-size: 0.86rem;
+  color: var(--fg-muted);
+}
+
+.tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.12rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  color: var(--fg-faint);
+}
+.tag-proprietary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Switch built on a real checkbox so it stays keyboard and screen-reader
+   accessible; the input is visually hidden, not removed. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--fg-muted);
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch-track {
+  width: 40px;
+  height: 23px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  position: relative;
+  transition: background 0.15s;
+  flex: none;
+}
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.switch input:checked + .switch-track {
+  background: var(--ok);
+}
+.switch input:checked + .switch-track::after {
+  transform: translateX(17px);
+}
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
