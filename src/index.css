@@ -406,6 +406,21 @@ p {
   outline-offset: 1px;
   border-color: transparent;
 }
+.field select {
+  width: 100%;
+  padding: 0.62rem 0.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+.field select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
 
 /* --- one-time code ------------------------------------------------------ */
 

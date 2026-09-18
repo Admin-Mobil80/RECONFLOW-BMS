@@ -90,7 +90,7 @@ function friendly(error: unknown): AuthError {
       // Reached after the third wrong code, or once the code has expired.
       return new AuthError("That code has expired or been tried too many times. Send a new code.");
     case "UserNotFoundException":
-      return new AuthError("No ReconFlow account uses that email address here.");
+      return new AuthError("User does not exist. No ReconFlow account uses that email address here.");
     case "LimitExceededException":
     case "TooManyRequestsException":
       return new AuthError("Too many attempts. Wait a moment and try again.");

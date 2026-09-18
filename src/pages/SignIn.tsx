@@ -102,7 +102,7 @@ export default function SignIn() {
             <>
               <h1>Check your email</h1>
               <p className="sub">
-                We sent a six-digit code to <b>{pending.destination ?? pending.email}</b>.
+                We sent a six-digit code to <b>{pending.email}</b>.
                 {resent && " A new code is on its way."}
               </p>
               <form

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api, ApiError } from "../api";
 import { useAuth } from "../auth/AuthContext";
+import { CURRENCIES } from "../currencies";
 
 export interface Organisation {
   readonly organisationId: string;
@@ -101,7 +102,13 @@ export default function Organisations() {
             </label>
             <label className="field">
               <span>Base currency</span>
-              <input name="baseCurrency" type="text" required pattern="[A-Za-z]{3}" defaultValue="USD" maxLength={3} />
+              <select name="baseCurrency" defaultValue="USD" required>
+                {CURRENCIES.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.code} — {currency.name}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
           <div className="contact-grid">
