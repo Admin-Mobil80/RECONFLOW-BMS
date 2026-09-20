@@ -17,6 +17,11 @@ interface DemoCase {
   readonly treasuryReceipts: number;
 }
 
+interface Supplier {
+  readonly supplierId: string;
+  readonly supplierName: string;
+}
+
 interface FundSource {
   readonly fundSourceId: string;
   readonly name: string;
@@ -40,17 +45,20 @@ export default function Demo() {
   const { idToken } = useAuth();
   const [cases, setCases] = useState<DemoCase[]>([]);
   const [funds, setFunds] = useState<FundSource[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [newSupplier, setNewSupplier] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const result = await api<{ cases: DemoCase[]; fundSources: FundSource[] }>(
+      const result = await api<{ cases: DemoCase[]; fundSources: FundSource[]; suppliers: Supplier[] }>(
         `/organisations/${ORGANISATION_ID}/demo/cases`,
         idToken(),
       );
       setCases(result.cases);
       setFunds(result.fundSources);
+      setSuppliers(result.suppliers);
     } catch (cause) {
       note(cause instanceof ApiError ? cause.message : "Could not load the demonstration state.", false);
     }
@@ -142,7 +150,8 @@ export default function Demo() {
             <form
               onSubmit={submit("credit-note", (d) => ({
                 type: "credit-note",
-                supplierName: d.supplierName,
+                supplierId: d.supplierId === "__new__" ? undefined : d.supplierId,
+                supplierName: d.supplierId === "__new__" ? d.supplierName : undefined,
                 fundSourceId: d.fundSourceId,
                 currency: d.currency,
                 invoiceAmount: Number(d.invoiceAmount),
@@ -153,8 +162,21 @@ export default function Demo() {
               <div className="contact-grid">
                 <label className="field">
                   <span>Supplier</span>
-                  <input name="supplierName" required defaultValue="Northern Rail Consultants" />
+                  <select name="supplierId" required onChange={(e) => setNewSupplier(e.target.value === "__new__")}>
+                    {suppliers.map((s) => (
+                      <option key={s.supplierId} value={s.supplierId}>
+                        {s.supplierName} ({s.supplierId})
+                      </option>
+                    ))}
+                    <option value="__new__">New supplier…</option>
+                  </select>
                 </label>
+                {newSupplier && (
+                  <label className="field">
+                    <span>New supplier&rsquo;s name</span>
+                    <input name="supplierName" required placeholder="Northern Rail Consultants" />
+                  </label>
+                )}
                 <label className="field">
                   <span>Paid from</span>
                   <select name="fundSourceId" required>
