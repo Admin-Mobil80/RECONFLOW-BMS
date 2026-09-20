@@ -20,6 +20,8 @@ interface DemoCase {
 interface Supplier {
   readonly supplierId: string;
   readonly supplierName: string;
+  readonly country?: string;
+  readonly category?: string;
 }
 
 interface FundSource {
@@ -165,7 +167,7 @@ export default function Demo() {
                   <select name="supplierId" required onChange={(e) => setNewSupplier(e.target.value === "__new__")}>
                     {suppliers.map((s) => (
                       <option key={s.supplierId} value={s.supplierId}>
-                        {s.supplierName} ({s.supplierId})
+                        {s.supplierName}{s.country ? ` · ${s.country}` : ""} ({s.supplierId})
                       </option>
                     ))}
                     <option value="__new__">New supplier…</option>
