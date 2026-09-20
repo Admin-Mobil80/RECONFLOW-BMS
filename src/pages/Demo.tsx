@@ -49,18 +49,21 @@ export default function Demo() {
   const [funds, setFunds] = useState<FundSource[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [newSupplier, setNewSupplier] = useState(false);
+  const [reasons, setReasons] = useState<string[]>([]);
+  const [otherReason, setOtherReason] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const result = await api<{ cases: DemoCase[]; fundSources: FundSource[]; suppliers: Supplier[] }>(
+      const result = await api<{ cases: DemoCase[]; fundSources: FundSource[]; suppliers: Supplier[]; reasons: string[] }>(
         `/organisations/${ORGANISATION_ID}/demo/cases`,
         idToken(),
       );
       setCases(result.cases);
       setFunds(result.fundSources);
       setSuppliers(result.suppliers);
+      setReasons(result.reasons);
     } catch (cause) {
       note(cause instanceof ApiError ? cause.message : "Could not load the demonstration state.", false);
     }
@@ -158,7 +161,7 @@ export default function Demo() {
                 currency: d.currency,
                 invoiceAmount: Number(d.invoiceAmount),
                 creditAmount: Number(d.creditAmount),
-                reason: d.reason,
+                reason: d.reason === "__other__" ? d.reasonOther : d.reason,
               }))}
             >
               <div className="contact-grid">
@@ -211,8 +214,21 @@ export default function Demo() {
                 </label>
                 <label className="field">
                   <span>Reason</span>
-                  <input name="reason" required defaultValue="Milestone 2 partially delivered" />
+                  <select name="reason" required onChange={(e) => setOtherReason(e.target.value === "__other__")}>
+                    {reasons.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                    <option value="__other__">Other…</option>
+                  </select>
                 </label>
+                {otherReason && (
+                  <label className="field">
+                    <span>Reason, in your words</span>
+                    <input name="reasonOther" required maxLength={200} />
+                  </label>
+                )}
               </div>
               <button className="btn btn-primary" type="submit" disabled={busy !== null}>
                 {busy === "credit-note" ? "Writing…" : "Issue credit note"}
