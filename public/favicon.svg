@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ReconFlow BMS">
+  <!-- The portal's mark in navy, so the admin tab is told apart from the
+       portal's teal one at a glance. -->
+  <rect width="32" height="32" rx="7.5" fill="#1f3a5f"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round">
+    <path d="M6.5 10H12c3.6 0 3.6 6 7.2 6"/>
+    <path d="M6.5 22H12c3.6 0 3.6-6 7.2-6"/>
+  </g>
+  <circle cx="23" cy="16" r="3" fill="#ffffff"/>
+</svg>
