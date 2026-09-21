@@ -4,6 +4,7 @@ import AppLayout from "./pages/AppLayout";
 import Demo from "./pages/Demo";
 import Organisations from "./pages/Organisations";
 import SignIn from "./pages/SignIn";
+import Users from "./pages/Users";
 
 function NotFound() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Organisations />} />
         <Route path="demo" element={<Demo />} />
+        <Route path="users" element={<Users />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

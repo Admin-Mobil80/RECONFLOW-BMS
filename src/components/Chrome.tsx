@@ -57,6 +57,7 @@ export function AppHeader() {
             Organisations
           </NavLink>
           <NavLink to="/demo">Demonstration</NavLink>
+          <NavLink to="/users">Users</NavLink>
         </nav>
       </div>
     </>

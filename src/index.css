@@ -740,6 +740,12 @@ ul.form-error {
   color: var(--fg-muted);
 }
 
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.84rem;
+  border-radius: 8px;
+}
+
 .tag {
   font-size: 0.72rem;
   letter-spacing: 0.04em;
