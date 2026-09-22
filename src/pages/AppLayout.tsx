@@ -10,8 +10,9 @@ export default function AppLayout() {
   if (!session) return <Navigate to="/signin" replace state={{ from: location.pathname }} />;
 
   // Pool membership already keeps customer accounts out; this is belt and
-  // braces for a token that somehow carries another role.
-  if (session.role !== "root" && !isMock) {
+  // braces for a token that somehow carries another role. The platform's own
+  // people are the root and the administrators it adds - both belong here.
+  if (session.role !== "root" && session.role !== "administrator" && !isMock) {
     void signOut();
     return <Navigate to="/signin" replace />;
   }

@@ -31,6 +31,11 @@ export interface PendingSignIn {
   readonly destination?: string;
   /** The provider's own identifier for the user, when it differs from the email. */
   readonly username?: string;
+  /**
+   * A demonstration account: a fixed code and no email, so the screen must
+   * not claim one was sent. The provider tells us; we do not keep a list.
+   */
+  readonly isDemo?: boolean;
 }
 
 export interface AuthClient {

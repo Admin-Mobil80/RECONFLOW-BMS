@@ -100,10 +100,19 @@ export default function SignIn() {
             </>
           ) : (
             <>
-              <h1>Check your email</h1>
+              <h1>{pending.isDemo ? "Enter your code" : "Check your email"}</h1>
               <p className="sub">
-                We sent a six-digit code to <b>{pending.email}</b>.
-                {resent && " A new code is on its way."}
+                {pending.isDemo ? (
+                  <>
+                    <b>{pending.email}</b> is a demonstration account. Enter the six-digit code you
+                    were given — no email is sent.
+                  </>
+                ) : (
+                  <>
+                    We sent a six-digit code to <b>{pending.email}</b>.
+                    {resent && " A new code is on its way."}
+                  </>
+                )}
               </p>
               <form
                 onSubmit={(event) => {
@@ -125,9 +134,11 @@ export default function SignIn() {
                 </div>
               </form>
               <p className="note" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <button className="linklike" type="button" onClick={resend} disabled={busy}>
-                  Send a new code
-                </button>
+                {!pending.isDemo && (
+                  <button className="linklike" type="button" onClick={resend} disabled={busy}>
+                    Send a new code
+                  </button>
+                )}
                 <button
                   className="linklike"
                   type="button"

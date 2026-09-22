@@ -155,6 +155,7 @@ export function cognitoAuth(config: CognitoConfig): AuthClient {
           // Cognito answers with its own id for the user; that is what the
           // challenge response must carry.
           username: response.ChallengeParameters?.USERNAME,
+          isDemo: response.ChallengeParameters?.demo === "true",
         };
       } catch (error) {
         throw error instanceof AuthError ? error : friendly(error);
