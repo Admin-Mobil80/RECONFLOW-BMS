@@ -740,6 +740,39 @@ ul.form-error {
   color: var(--fg-muted);
 }
 
+.head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.filter-bar label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.86rem;
+}
+.filter-bar label span {
+  font-weight: 550;
+}
+.filter-bar select {
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+
 .btn-sm {
   padding: 0.3rem 0.7rem;
   font-size: 0.84rem;

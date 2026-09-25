@@ -1,6 +1,7 @@
 import { Link, Route, Routes } from "react-router-dom";
 import { PlainHeader } from "./components/Chrome";
 import AppLayout from "./pages/AppLayout";
+import Audit from "./pages/Audit";
 import Demo from "./pages/Demo";
 import Organisations from "./pages/Organisations";
 import SignIn from "./pages/SignIn";
@@ -28,6 +29,7 @@ export default function App() {
         <Route index element={<Organisations />} />
         <Route path="demo" element={<Demo />} />
         <Route path="users" element={<Users />} />
+        <Route path="audit" element={<Audit />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

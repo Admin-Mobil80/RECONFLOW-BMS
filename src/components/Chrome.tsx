@@ -58,6 +58,7 @@ export function AppHeader() {
           </NavLink>
           <NavLink to="/demo">Demonstration</NavLink>
           <NavLink to="/users">Users</NavLink>
+          {session?.role === "root" && <NavLink to="/audit">Audit</NavLink>}
         </nav>
       </div>
     </>
